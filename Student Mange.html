@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School MS - Admin Portal Final</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root { --sidebar-bg: #2A3F54; --accent-green: #1ABB9C; --entry-bg: #EDEDED; }
+        body { background: #F7F7F7; font-family: "Helvetica Neue", sans-serif; font-size: 13px; color: #73879C; }
+        #sidebar { min-width: 230px; background: var(--sidebar-bg); color: #fff; min-height: 100vh; position: sticky; top: 0; z-index: 100; }
+        .nav-link { color: #EDEDED; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); border-right: 5px solid var(--accent-green); color: #fff; }
+        .tile-card { color: #fff; padding: 20px; border-radius: 4px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .data-card { background: #fff; border: 1px solid #E6E9ED; padding: 20px; border-radius: 2px; margin-bottom: 20px; min-height: 450px; }
+        .hidden { display: none; }
+        .student-link { color: #3498DB; cursor: pointer; font-weight: bold; text-decoration: underline; }
+        .top_nav { background: #EDEDED; padding: 10px 20px; border-bottom: 1px solid #D9DEE4; }
+        
+        .vertical-entry-card { background: var(--sidebar-bg); color: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; }
+        .vertical-entry-card label { font-weight: bold; font-size: 11px; text-transform: uppercase; color: #1ABB9C; margin-bottom: 2px; }
+        .vertical-entry-card .form-control { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px; border-radius: 4px; margin-bottom: 12px; }
+        .vertical-entry-card .form-control:focus { background: rgba(255,255,255,0.2); border-color: #1ABB9C; color: white; box-shadow: none; }
+        .vertical-entry-card .form-control::placeholder { color: #aaa; }
+        .vertical-entry-card select option { background: var(--sidebar-bg); color: white; }
+        
+        .btn-main { background: #1ABB9C; color: white; font-weight: bold; border: none; padding: 10px; border-radius: 4px; transition: 0.3s; }
+        .btn-main:hover { background: #16a085; }
+        .btn-cancel { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; font-weight: bold; padding: 10px; border-radius: 4px; }
+
+        .profile-header { background: #f9f9f9; border-left: 4px solid var(--accent-green); padding: 15px; margin-bottom: 15px; }
+        .stat-badge { background: var(--sidebar-bg); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        .contact-info-box { background: #f0f4f7; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        
+        /* SEARCH BAR STYLING */
+        .search-box { margin-bottom: 15px; }
+        .search-box .form-control { font-size: 12px; border-radius: 20px; padding-left: 35px; }
+        .search-icon { position: absolute; margin-left: 12px; margin-top: 10px; color: #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex">
+    <nav id="sidebar">
+        <div class="p-3"><b>SCHOOL SYSTEM</b></div>
+        <div class="text-center p-3 border-bottom border-secondary mb-2">
+            <div class="mb-2"><i class="fas fa-user-shield fa-4x text-light"></i></div>
+            <h6 class="font-weight-bold mb-0">ADMIN</h6>
+        </div>
+        <div class="nav-link active" onclick="switchTab('dashboard', this)"><i class="fas fa-home mr-2"></i> Dashboard</div>
+        <div class="nav-link" onclick="switchTab('student', this)"><i class="fas fa-user-edit mr-2"></i> Manage Students</div>
+    </nav>
+
+    <div class="flex-grow-1">
+        <header class="top_nav d-flex justify-content-between align-items-center shadow-sm">
+            <i class="fas fa-bars"></i>
+            <span class="font-weight-bold">ADMINISTRATION PORTAL</span>
+            <div class="small">Session: <b>Active</b></div>
+        </header>
+
+        <div class="p-4">
+            <div id="section-dashboard" class="tab-content">
+                <div class="row text-white text-center">
+                    <div class="col-md-3"><div class="tile-card bg-info"><h3 id="dash-std-count">0</h3><p>Total Students</p></div></div>
+                    <div class="col-md-3"><div class="tile-card" style="background:#26B99A;"><h3>5</h3><p>Subjects</p></div></div>
+                    <div class="col-md-3"><div class="tile-card bg-warning"><h3 id="dash-ex-count">0</h3><p>Total Marks</p></div></div>
+                    <div class="col-md-3"><div class="tile-card bg-danger"><h3>Admin</h3><p>Role</p></div></div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="data-card shadow-sm">
+                            <h6 class="font-weight-bold mb-3">Student Directory</h6>
+                            
+                            <div class="search-box position-relative">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="dash-search" class="form-control" placeholder="Search by name or department..." onkeyup="renderDashboard()">
+                            </div>
+
+                            <table class="table table-hover table-sm">
+                                <thead class="bg-light"><tr><th>Reg No</th><th>Name</th><th>Dept</th><th>Avg</th></tr></thead>
+                                <tbody id="dash-student-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="student-profile-view" class="data-card shadow-sm">
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-address-card fa-5x mb-3"></i>
+                                <h5>Click a student's name to view profile</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-student" class="tab-content hidden">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="vertical-entry-card shadow">
+                            <h5 id="form-title" class="mb-4"><i class="fas fa-plus-circle mr-2"></i> Add Student</h5>
+                            <input type="hidden" id="edit-id">
+                            
+                            <label>Full Name</label>
+                            <input type="text" id="std-name" class="form-control" placeholder="Name">
+                            
+                            <label>Reg Number</label>
+                            <input type="number" id="std-reg" class="form-control" placeholder="101">
+
+                            <label>Email (Gmail)</label>
+                            <input type="email" id="std-email" class="form-control" placeholder="example@gmail.com">
+
+                            <label>Phone Number</label>
+                            <input type="text" id="std-phone" class="form-control" placeholder="+91...">
+                            
+                            <label>Department</label>
+                            <select id="std-branch" class="form-control">
+                                <option>AI&DS</option><option>CSE</option><option>IT</option><option>ECE</option>
+                            </select>
+
+                            <div class="row">
+                                <div class="col-6"><label>ENG</label><input type="number" id="m-eng" class="form-control"></div>
+                                <div class="col-6"><label>M1</label><input type="number" id="m-m1" class="form-control"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><label>PHY</label><input type="number" id="m-phy" class="form-control"></div>
+                                <div class="col-4"><label>CHM</label><input type="number" id="m-chm" class="form-control"></div>
+                                <div class="col-4"><label>EEE</label><input type="number" id="m-eee" class="form-control"></div>
+                            </div>
+
+                            <div id="btn-container" class="mt-3">
+                                <button class="btn btn-main btn-block" onclick="saveStudent()">Save Student</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="data-card shadow-sm">
+                            <h6 class="font-weight-bold">Record History</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mt-2">
+                                    <thead class="bg-light"><tr><th>Reg</th><th>Name</th><th>Dept</th><th>AVG</th><th>Action</th></tr></thead>
+                                    <tbody id="mgmt-student-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('admin_vertical_final_db')) || { students: [] };
+
+    function syncAll() {
+        db.students.sort((a, b) => parseInt(a.reg) - parseInt(b.reg));
+        localStorage.setItem('admin_vertical_final_db', JSON.stringify(db));
+        renderDashboard();
+        renderStudentMgmt();
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('section-' + tabId).classList.remove('hidden');
+        el.classList.add('active');
+    }
+
+    function saveStudent() {
+        const name = document.getElementById('std-name').value.trim();
+        const reg = document.getElementById('std-reg').value.trim();
+        const email = document.getElementById('std-email').value.trim();
+        const phone = document.getElementById('std-phone').value.trim();
+        const editId = document.getElementById('edit-id').value;
+
+        if(!name || !reg) return alert("Fill Name and Reg No");
+
+        const marks = {
+            ENG: parseFloat(document.getElementById('m-eng').value) || 0,
+            M1: parseFloat(document.getElementById('m-m1').value) || 0,
+            PHY: parseFloat(document.getElementById('m-phy').value) || 0,
+            CHM: parseFloat(document.getElementById('m-chm').value) || 0,
+            EEE: parseFloat(document.getElementById('m-eee').value) || 0
+        };
+        const avg = ((marks.ENG + marks.M1 + marks.PHY + marks.CHM + marks.EEE) / 5).toFixed(2);
+
+        const studentData = {
+            id: editId ? parseInt(editId) : Date.now(),
+            name, reg, email, phone,
+            branch: document.getElementById('std-branch').value,
+            marks, avg
+        };
+
+        if(editId) {
+            const index = db.students.findIndex(s => s.id === parseInt(editId));
+            db.students[index] = studentData;
+        } else {
+            db.students.push(studentData);
+        }
+
+        resetForm();
+        syncAll();
+    }
+
+    function editStudent(id) {
+        const s = db.students.find(x => x.id === id);
+        document.getElementById('std-name').value = s.name;
+        document.getElementById('std-reg').value = s.reg;
+        document.getElementById('std-email').value = s.email || "";
+        document.getElementById('std-phone').value = s.phone || "";
+        document.getElementById('std-branch').value = s.branch;
+        document.getElementById('m-eng').value = s.marks.ENG;
+        document.getElementById('m-m1').value = s.marks.M1;
+        document.getElementById('m-phy').value = s.marks.PHY;
+        document.getElementById('m-chm').value = s.marks.CHM;
+        document.getElementById('m-eee').value = s.marks.EEE;
+        document.getElementById('edit-id').value = s.id;
+
+        document.getElementById('form-title').innerHTML = `<i class="fas fa-edit mr-2"></i> Edit Record`;
+        document.getElementById('btn-container').innerHTML = `
+            <button class="btn btn-main btn-block mb-2" onclick="saveStudent()">Update Details</button>
+            <button class="btn btn-cancel btn-block" onclick="resetForm()">Cancel</button>
+        `;
+    }
+
+    function resetForm() {
+        ['std-name', 'std-reg', 'std-email', 'std-phone', 'm-eng', 'm-m1', 'm-phy', 'm-chm', 'm-eee', 'edit-id'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('form-title').innerHTML = `<i class="fas fa-plus-circle mr-2"></i> Add Student`;
+        document.getElementById('btn-container').innerHTML = `<button class="btn btn-main btn-block" onclick="saveStudent()">Save Student</button>`;
+    }
+
+    function renderDashboard() {
+        const searchTerm = document.getElementById('dash-search').value.toLowerCase();
+        
+        // Filter the database list based on search term
+        const filteredStudents = db.students.filter(s => 
+            s.name.toLowerCase().includes(searchTerm) || 
+            s.branch.toLowerCase().includes(searchTerm) ||
+            s.reg.toString().includes(searchTerm)
+        );
+
+        document.getElementById('dash-student-list').innerHTML = filteredStudents.map(s => `
+            <tr>
+                <td><b>${s.reg}</b></td>
+                <td><span class="student-link" onclick="viewProfile(${s.id})">${s.name}</span></td>
+                <td>${s.branch}</td>
+                <td>${s.avg}%</td>
+            </tr>
+        `).join('');
+
+        document.getElementById('dash-std-count').innerText = db.students.length;
+        document.getElementById('dash-ex-count').innerText = db.students.length * 5;
+    }
+
+    function viewProfile(id) {
+        const s = db.students.find(x => x.id === id);
+        if(!s) return;
+
+        document.getElementById('student-profile-view').innerHTML = `
+            <div class="profile-header">
+                <h4 class="text-dark font-weight-bold mb-1">${s.name}</h4>
+                <p class="text-muted mb-0">Reg No: <b>${s.reg}</b> | Department: <b>${s.branch}</b></p>
+            </div>
+            
+            <div class="contact-info-box small">
+                <div><i class="fas fa-envelope mr-2 text-primary"></i> <b>Gmail:</b> ${s.email || 'Not Provided'}</div>
+                <div><i class="fas fa-phone mr-2 text-success"></i> <b>Phone:</b> ${s.phone || 'Not Provided'}</div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="font-weight-bold m-0 text-dark">Marks Summary</h6>
+                <div class="stat-badge">Average: ${s.avg}%</div>
+            </div>
+
+            <table class="table table-sm table-bordered">
+                <thead class="bg-light"><tr><th>Subject</th><th>Score</th></tr></thead>
+                <tbody>
+                    <tr><td>English</td><td>${s.marks.ENG}</td></tr>
+                    <tr><td>Maths (M1)</td><td>${s.marks.M1}</td></tr>
+                    <tr><td>Physics</td><td>${s.marks.PHY}</td></tr>
+                    <tr><td>Chemistry</td><td>${s.marks.CHM}</td></tr>
+                    <tr><td>EEE</td><td>${s.marks.EEE}</td></tr>
+                </tbody>
+            </table>
+        `;
+    }
+
+    function renderStudentMgmt() {
+        document.getElementById('mgmt-student-list').innerHTML = db.students.map(s => `
+            <tr>
+                <td>${s.reg}</td><td>${s.name}</td><td>${s.branch}</td><td><b>${s.avg}</b></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary mr-1" onclick="editStudent(${s.id})"><i class="fa fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${s.id})"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteStudent(id) {
+        if(confirm("Are you sure?")) {
+            db.students = db.students.filter(s => s.id !== id);
+            syncAll();
+        }
+    }
+
+    syncAll();
+</script>
+</body>
+</html>
